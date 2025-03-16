@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include"InetAddr.hpp"
 using namespace std;
 static const int gsocket = -1;
 const uint16_t defaultport = 10000;
@@ -65,12 +66,10 @@ public:
             ssize_t n=recvfrom(_socketfd,inbuffer,sizeof(inbuffer)-1,0,(struct sockaddr*)&remote,&len);
             if(n>0)
             {
-                uint16_t remoteport=ntohs(remote.sin_port);
-                string remoteip=inet_ntoa(remote.sin_addr);
+                InetAddr addr(remote);
                 inbuffer[n]=0;
-                cout<<"["<<remoteip<<":"<<remoteport<<"]"<<inbuffer<<endl;
-                string msg="[UDP Server Echo]";
-                msg+=inbuffer;
+                cout<<"["<<addr.Ip()<<":"<<addr.Port()<<"]"<<inbuffer<<endl;
+                string msg="[UDP Server Received]";
                 sendto(_socketfd,msg.c_str(),msg.size()-1,0,(struct sockaddr*)&remote,len);
 
             }

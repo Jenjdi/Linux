@@ -27,8 +27,8 @@ public:
 class Udpserver : public nocopy
 {
 public:
-    Udpserver(const string &localIp, uint16_t _localport = defaultport)
-        : _socketfd(gsocket), _localport(defaultport), _localIp(localIp),_isrunning(false)
+    Udpserver(uint16_t _localport = defaultport)
+        : _socketfd(gsocket), _localport(defaultport), _isrunning(false)
     {}
     void init()
     {
@@ -43,7 +43,8 @@ public:
         memset(&local, 0, sizeof(local));
         local.sin_family = AF_INET;
         local.sin_port = htons(_localport);
-        local.sin_addr.s_addr = inet_addr(_localIp.c_str());
+        //local.sin_addr.s_addr = inet_addr(_localIp.c_str());
+        local.sin_addr.s_addr=INADDR_ANY;//接收来着所有IP的消息
         int n = bind(_socketfd, (struct sockaddr *)&local, sizeof(local));
         if (n < 0)
         {
@@ -64,11 +65,19 @@ public:
             ssize_t n=recvfrom(_socketfd,inbuffer,sizeof(inbuffer)-1,0,(struct sockaddr*)&remote,&len);
             if(n>0)
             {
+                uint16_t remoteport=ntohs(remote.sin_port);
+                string remoteip=inet_ntoa(remote.sin_addr);
                 inbuffer[n]=0;
+                cout<<"["<<remoteip<<":"<<remoteport<<"]"<<inbuffer<<endl;
                 string msg="[UDP Server Echo]";
                 msg+=inbuffer;
-                sendto(_socketfd,msg.c_str(),msg.size(),0,(struct sockaddr*)&remote,len);
+                sendto(_socketfd,msg.c_str(),msg.size()-1,0,(struct sockaddr*)&remote,len);
 
+            }
+            else 
+            {
+                cout<<"receive error"<<endl;
+                break;
             }
         }
     }
@@ -80,6 +89,6 @@ public:
 private:
     int _socketfd;
     uint16_t _localport;
-    string _localIp;
+    //string _localIp;
     bool _isrunning;
 };

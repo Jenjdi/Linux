@@ -2,9 +2,8 @@
 
 int main()
 {
-    string ip="127.0.0.1";
     int port=10000;
-    unique_ptr<Udpserver> usvr=std::make_unique<Udpserver>(ip,port);
+    unique_ptr<Udpserver> usvr=std::make_unique<Udpserver>(port);
     usvr->init();
     usvr->start();
 }

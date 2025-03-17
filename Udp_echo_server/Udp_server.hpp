@@ -36,7 +36,7 @@ public:
         _socketfd = socket(AF_INET, SOCK_DGRAM, 0);
         if (_socketfd == 0)
         {
-            cout<<"Socket Create Success"<<endl;
+            cout<<"Socket Create Failed"<<endl;
             exit(_SOCKET_ERROR);
         }
         cout<<"Socket Create Success"<<endl;

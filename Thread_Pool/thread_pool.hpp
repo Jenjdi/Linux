@@ -5,6 +5,10 @@
 #include"thread.hpp"
 #include"LockGuard.hpp"
 #include<memory>
+void test()
+{
+    cout<<"TEST MESSAGE"<<endl;
+}
 using namespace std;
 static const int gdefaultnum=5;
 template<typename T>
@@ -19,15 +23,24 @@ class thread_pool
     }
     void init()
     {
+        func_t func=bind(&thread_pool::Handler,this);
         for(int i=0;i<_threadnum;i++)
         {
             string threadname="thread-"+to_string(i+1);
-            _threads.emplace_back(threadname,);
+            _threads.emplace_back(threadname,func);
         }   
     }
     void wake()
     {
         pthread_cond_signal(&_cond);
+    }
+    void sleep()
+    {
+        pthread_cond_wait(&_cond,&_mutex);
+    }
+    bool IsEmpty()
+    {
+        return _task_queue.empty();
     }
     void start()
     {
@@ -40,7 +53,17 @@ class thread_pool
     }
     void Handler()
     {
-
+        while(true)
+        {
+            LockGuard lock(_mutex);
+            while(IsEmpty())//防止伪唤醒
+            {
+                _sleep_threadnum++;
+                sleep();
+            }
+            T t=_task_queue.front();
+            _task_queue.pop();
+        }
     }
     void stop()
     {
@@ -75,5 +98,5 @@ class thread_pool
     bool _isrunning;
     int _sleep_threadnum;
     pthread_mutex_t _mutex;
-    pthread_cont_t _cond;
+    pthread_cond_t _cond;
 };

@@ -3,6 +3,7 @@
         "memory": "cpp",
         "functional": "cpp",
         "ostream": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "*.tcc": "cpp"
     }
 }

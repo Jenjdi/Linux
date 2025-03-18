@@ -25,6 +25,7 @@ public:
     void Excute()
     {
         _result = _x + _y;
+        std::cout << "计算结果：" << result() << std::endl;
     }
     void operator ()()
     {

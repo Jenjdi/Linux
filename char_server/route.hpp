@@ -73,5 +73,5 @@ class route
     }
     private:
     std::vector<InetAddr> _online_user;
-    pthread_mutex_t _routemutex;
+    pthread_mutex_t _routemutex=PTHREAD_MUTEX_INITIALIZER;
 };

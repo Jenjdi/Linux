@@ -20,7 +20,7 @@ class route
     }
     void check_user_online(InetAddr& who)
     {
-        LockGuard(&_routemutex);
+        LockGuard lockguard(&_routemutex);
         for(auto& user:_online_user)
         {
             if(user == who)
@@ -32,7 +32,7 @@ class route
     }
     void offline(InetAddr& who)
     {
-        LockGuard(&_routemutex);
+        LockGuard lockguard(&_routemutex);
         auto it=_online_user.begin();
         for(;it!=_online_user.end();it++)
         {
@@ -43,9 +43,9 @@ class route
             }
         }
     }
-    void forwardhelper(int socketfd,const string& message)
+    void forwardhelper(int socketfd,const string& message,InetAddr who)
     {
-        LockGuard(&_routemutex);
+        LockGuard lockguard(&_routemutex);
         for(auto user:_online_user)
         {
             struct sockaddr_in peer=user.Addr();
@@ -63,7 +63,7 @@ class route
         {
             offline(addr);
         }
-        task_t t=bind(&route::forwardhelper,this,socketfd,string(message));
+        task_t t=bind(&route::forwardhelper,this,socketfd,string(message),addr);
         thread_pool<task_t>::GetInstance()->push(t);
     }
     
@@ -73,5 +73,5 @@ class route
     }
     private:
     std::vector<InetAddr> _online_user;
-    pthread_mutex_t _routemutex=PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_t _routemutex;
 };

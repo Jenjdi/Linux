@@ -6,20 +6,9 @@
 #include<functional>
 using namespace std;
 
-using func_t=function<void()>;
+using func_t=function<void(const string&)>;
 class Thread
 {
-    public:
-    void Excute()
-    {
-        _isrunning=true;
-        _func();
-        _isrunning=false;
-    }
-    string Name()
-    {
-        return _name;
-    }
     public:
     Thread(const string& name,func_t func)
     :_name(name),_func(func)
@@ -28,6 +17,16 @@ class Thread
     {
         if(_isrunning) return "Thread is running";
         else return "Thread has stopped";
+    }
+    void Excute()
+    {
+        _isrunning=true;
+        _func(_name);
+        _isrunning=false;
+    }
+    string Name()
+    {
+        return _name;
     }
     static void* ThreadRoutine(void* args)//隐含了当前对象的this指针，因此不能直接传入，需要static修饰
     {

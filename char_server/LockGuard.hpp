@@ -1,10 +1,10 @@
 #pragma once
-#include<pthread.h>
+#include <pthread.h>
 class LockGuard
 {
-    public:
-    LockGuard(pthread_mutex_t* mutex)
-    :_mutex(mutex)
+public:
+    LockGuard(pthread_mutex_t *mutex)
+        : _mutex(mutex)
     {
         pthread_mutex_lock(_mutex);
     }
@@ -12,6 +12,7 @@ class LockGuard
     {
         pthread_mutex_unlock(_mutex);
     }
-    private:
+
+private:
     pthread_mutex_t *_mutex;
 };

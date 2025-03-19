@@ -120,10 +120,6 @@ public:
                 _tp->start();
             }
         }
-        else
-        {
-            cout<<"Get ThreadPool"<<endl;
-        }
         return _tp;
     }
     ~thread_pool()

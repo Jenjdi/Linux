@@ -8,6 +8,7 @@
 #include<netinet/in.h>
 #include<arpa/inet.h>
 #include"InetAddr.hpp"
+#include<sys/wait.h>
 using namespace std;
 const static uint16_t gport=8888;
 const static int gsock=-1;
@@ -65,7 +66,25 @@ class tcpserver
                 continue;
             }
             InetAddr addr(client);
-            service(sockfd,addr);
+            //service(sockfd,addr);
+            //多进程版本：
+            pid_t id=fork();
+            if(id==0)
+            {
+                close(_listensockfd);
+                if(fork()>0)//创建一个孙子进程来执行下面的操作，然后自己退出，当孙子进程执行完成后，将会变成孤儿进程，操作系统将会自己回收
+                {
+                    exit(0);
+                }
+                service(sockfd,addr);
+                exit(0);
+            }
+            close(sockfd);
+            int n=waitpid(id,nullptr,0);
+            if(n>0)
+            {
+                cout<<"child wait success"<<endl;
+            }
         }
         _isrunning=false;
     }

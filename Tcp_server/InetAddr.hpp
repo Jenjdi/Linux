@@ -23,6 +23,8 @@ class InetAddr
     {
         to_host(addr);
     }
+    InetAddr()
+    {}
     bool operator == (InetAddr& addr)
     {
         return this->_ip==addr._ip&&this->_port==addr._port;

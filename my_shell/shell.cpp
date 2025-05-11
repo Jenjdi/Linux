@@ -7,11 +7,17 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 #define ZERO '\0'
 #define SIZE 512
 #define SPACE " "
 #define NUM 64
+#define None_Redir 0
+#define In_Redir 1
+#define Out_Redir 2
+#define App_Redir 3
+
 #define Skip(p)               \
     do                        \
     {                         \
@@ -21,8 +27,26 @@
             p--;              \
         }                     \
     } while (0)
+#define SkipSpace(cmd, pos)        \
+    do                             \
+    {                              \
+        while (1)                  \
+        {                          \
+            if (isspace(cmd[pos])) \
+            {                      \
+                pos++;             \
+            }                      \
+            else                   \
+            {                      \
+                break;             \
+            }                      \
+        }                          \
+    } while (0)
+
 char *cwd;
 int lastcode = 0;
+int redir_type = None_Redir;
+char *filename = NULL;
 const char *getusername()
 {
     const char *env = getenv("USER");
@@ -145,12 +169,49 @@ int checkBuilding()
         flag = 1;
         cd();
     }
-    else if (strcmp(gArg[0], "echo")==0)
+    else if (strcmp(gArg[0], "echo") == 0)
     {
         flag = 1;
         echo();
     }
     return flag;
+}
+void checkDir(char cmd[])
+{
+    int pos = 0;
+    int end = strlen(cmd);
+    while (pos < end)
+    {
+        if (cmd[pos] == '>')
+        {
+            if (cmd[pos + 1] == '>')
+            {
+                cmd[pos++] = 0;
+                pos++;//由于有两个>，因此跳过两个字符
+                redir_type = App_Redir;
+                SkipSpace(cmd, pos);
+                filename = cmd + pos;
+            }
+            else
+            {
+                cmd[pos++] = 0;
+                redir_type = Out_Redir;
+                SkipSpace(cmd, pos);
+                filename = cmd + pos;
+            }
+        }
+        else if (cmd[pos] == '<')
+        {
+            cmd[pos++] = 0; // 设置为0直接就将命令和文件分开了
+            redir_type = In_Redir;
+            SkipSpace(cmd, pos);
+            filename = cmd + pos;
+        }
+        else
+        {
+            pos++;
+        }
+    }
 }
 void ExecuteCommand()
 {
@@ -162,6 +223,24 @@ void ExecuteCommand()
     }
     else if (pid == 0)
     {
+        if(filename!=NULL)
+        {
+            if(redir_type==In_Redir)
+            {
+                int fd=open(filename,O_RDONLY);
+                dup2(fd,0);//将文件中的内容输入到命令中，因此要更改的是输入
+            }
+            else if(redir_type==Out_Redir)
+            {
+                int fd=open(filename,O_CREAT|O_WRONLY|O_TRUNC,0666);
+                dup2(fd,1);//将命令中的内容输出到文件中，因此要更改的是输出
+            }
+            else if(redir_type==App_Redir)
+            {
+                int fd=open(filename,O_CREAT|O_WRONLY|O_APPEND,0666);
+                dup2(fd,1);//同样是输出，但是这里是追加而不是覆盖
+            }
+        }
         // child
         execvp(gArg[0], gArg); // 如果直接运行cd等内建命令，会导致子进程自己的pwd切换了，但是父进程并没有切换
         exit(errno);
@@ -190,6 +269,10 @@ int main()
         MakeCommandLine();
         char usercommand[SIZE];
         int n = getCommand(usercommand, sizeof(usercommand));
+        if (n <= 0)
+            return 1;
+        checkDir(usercommand);
+
         splitcommand(usercommand);
         if (checkBuilding())
         {

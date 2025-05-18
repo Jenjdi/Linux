@@ -8,10 +8,10 @@ int main()
         string message;
         while (true)
         {
-            int n = fifo.ReadPipe(message);
+            int n = fifo.ReadFifo(message);
             if (n > 0)
             {
-                cout << "read message: " << message << endl;
+                cout << "server read> " << message << endl;
             }
             else if(n==0)
             {

@@ -237,7 +237,7 @@ public:
     void closefd()
     {
         close(_wfd);
-        cout<<"close"<<_wfd<<"success"<<endl;
+        //cout<<"close"<<_wfd<<"success"<<endl;
     }
 };
 int selecttask()
@@ -323,6 +323,14 @@ void createprocess(int num, vector<Channel> *channel) // 这里的channel用于�
         pid_t pid = fork();
         if (pid == 0)
         {
+            if(!channel->empty())//若为空，说明这是第一个创建的子进程，因此不做调整
+            {
+                for(auto& ch:*channel)
+                {
+                    ch.closefd();//从第二个进程开始，就会出现写端指向了不该去的地方，因此遍历所有的子进程，关闭写端
+                    //因为父进程并不在channel中，因此不会将父进程的误关闭
+                }
+            }
             close(pipefd[1]);
             work(pipefd[0]);
             close(pipefd[0]);
@@ -338,9 +346,7 @@ void CleanProcess(vector<Channel> &channels)
     for (auto &ch : channels)
     {
         ch.closefd();
-    }
-    for (auto &ch : channels)
-    {
         ch.waitprocess();
     }
+
 }

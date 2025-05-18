@@ -1,15 +1,17 @@
 #include "fifo.hpp"
 int main()
 {
-    Fifo f(commonPath, customer);
+    Fifo f(commonPath, user);
     if (f.OpenWrite())
     {
-        int i=2
-        while (i--)
+        //int i=2;
+        cout<<"client open fifo done pid: "<<getpid()<<endl;
+        while (1)
         {
-            string message = "client pid=:";
-            message += to_string(getpid());
-            f.WritePipe(message);
+            cout<<"input message> ";
+            string message;
+            getline(cin,message);
+            f.WriteFifo(message);
         }
 
         return 0;

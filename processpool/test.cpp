@@ -1,4 +1,4 @@
-#include "process.hpp"
+#include "process.h"
 // int i=0;
 // void childprocesswrite(int wrfd)
 // {
@@ -119,15 +119,23 @@
 //         cout << ch.getWfd() << endl;
 //     }
 // }
-int main()
+int main(int argc,char* argv[])
 {
+    if(argc!=2)
+    {
+        cerr<<"usage "<<argv[0]<<" processnum"<<endl;
+        return 1;
+    }
+    int num=stoi(argv[1]);
     vector<Channel> channel;
     //加载任务
     load();
     //创建子进程
-    creatprocess(2, channel);
+    createprocess(num, &channel);
     //为每个进程分配任务
-    processctr(channel,4);
+    //processctr(channel,4);
     //销毁子进程
-    cleanchannel(channel);
+    //cleanchannel(channel);
+    process_ctrl(channel,5);
+    CleanProcess(channel);
 }

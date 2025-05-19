@@ -98,11 +98,11 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-
 #define Write O_WRONLY
 #define Read O_RDONLY
-#define user 1
-#define creater 2
+#define creater 1
+#define user 2
+
 using namespace std;
 const string commonPath = "./fifo";
 #define defaultFD -1

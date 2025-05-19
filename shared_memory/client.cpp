@@ -1,10 +1,15 @@
-#include"shm.hpp"
+#include"shm.h"
 int main()
 {
-    sharedMemory shm(customer,pathname,proj_id);
-    char* getmess=(char*)shm.getshmAddr();
+    SharedMemory shm(pathname,user,proj_id);
+    Fifo fifo(commonPath, creater);
+    fifo.OpenRead();
+    char* getmess=(char*)shm.getshm();
+    
     while(1)
     {
+        string tmp;
+        fifo.ReadFifo(tmp);
         cout<<"get message:"<<getmess<<endl;
         sleep(1);
     }

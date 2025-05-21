@@ -9,9 +9,10 @@ int main()
         while (1)
         {
             cout<<"input message> ";
-            string message;
-            getline(cin,message);
+            string message="i am process A";
+            //getline(cin,message);
             f.WriteFifo(message);
+            sleep(1);
         }
 
         return 0;

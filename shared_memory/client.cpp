@@ -9,7 +9,6 @@ int main()
     while(1)
     {
         string tmp;
-        fifo.ReadFifo(tmp);
         cout<<"get message:"<<getmess<<endl;
         sleep(1);
     }

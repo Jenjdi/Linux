@@ -6,13 +6,11 @@ int main()
     fifo.OpenWrite();
     shm.clear();
     char* message=(char*)shm.getshm();
-    char ch='A';
-    while(ch<='Z')
+    char* ch="i am process A";
+    while(1)
     {
-        message[ch-'A']=ch;
-        fifo.WriteFifo("wake up client");
-        ch++;
-        sleep(2);
+        strcpy(message,ch);
+        sleep(1);
     }
     cout<<"server quit"<<endl;
 }

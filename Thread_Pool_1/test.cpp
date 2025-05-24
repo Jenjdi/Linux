@@ -37,18 +37,16 @@ private:
 
 int main()
 {
-    Thread_Pool<Task> tp;
-    tp.init();
-    tp.start();
+    
+    
     int cnt=10;
     while(cnt--)
     {
+        sleep(1);
         Task t(1,1);
-        tp.push(t);
-        //sleep(1);
+        Thread_Pool<Task>::GetInstance()->push(t);
     }
-    sleep(1);
     //tp.stop();
-    tp.join();
+    Thread_Pool<Task>::GetInstance()->stop();
     return 0;
 }

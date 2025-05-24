@@ -112,7 +112,8 @@
 //     };
 // }
 #include "Thread.h"
-#include<iostream>
+#include "LockGuard.hpp"
+#include <iostream>
 using namespace std;
 const int globalnum = 5;
 template <class T>
@@ -126,13 +127,15 @@ private:
     bool _isrunnning;
     pthread_mutex_t _mutex;
     pthread_cond_t _cond;
+    static Thread_Pool<T> *_tp;
+    static pthread_mutex_t _sig_mutex;
     bool IsEmpty()
     {
         return _task_queue.empty();
     }
     void Sleep()
     {
-        pthread_cond_wait(&_cond,&_mutex);
+        pthread_cond_wait(&_cond, &_mutex);
     }
     void Wake()
     {
@@ -150,12 +153,15 @@ private:
             while (IsEmpty() && _isrunnning)
             {
                 _sleep_num++;
+                LOG(INFO, "%s thread sleep begin!\n", name.c_str());
                 Sleep();
+                LOG(INFO, "%s thread wake up!\n", name.c_str());
                 _sleep_num--;
             }
             if (IsEmpty() && !_isrunnning)
             {
                 pthread_mutex_unlock(&_mutex);
+                LOG(INFO, "%s thread quit\n", name.c_str());
                 break;
             }
             T t;
@@ -163,7 +169,27 @@ private:
             _task_queue.pop();
             pthread_mutex_unlock(&_mutex);
             t();
-            cout << name << ":" << t.result() << endl;
+            // cout << name << ":" << t.result() << endl;
+            LOG(DEBUG, "handler task done, task is : %s\n", t.result().c_str());
+        }
+    }
+    void init()
+    {
+        func_t func = bind(&Thread_Pool::Handler, this, placeholders::_1);
+        for (int i = 0; i < _thread_num; i++)
+        {
+            string name = "Thread-" + to_string(i + 1);
+            _threads.emplace_back(name, func);
+            LOG(DEBUG, "construct thread %s done, init success\n", name.c_str());
+        }
+    }
+    void start()
+    {
+        _isrunnning = true;
+        for (auto &t : _threads)
+        {
+            LOG(DEBUG, "start thread %s done.\n", t.Name().c_str());
+            t.start();
         }
     }
 
@@ -176,22 +202,25 @@ public:
         pthread_cond_init(&_cond, nullptr);
         pthread_mutex_init(&_mutex, nullptr);
     }
-    void init()
+    static Thread_Pool<T> *GetInstance()
     {
-        func_t func = bind(&Thread_Pool::Handler, this, placeholders::_1);
-        for (int i = 0; i < _thread_num; i++)
+        if (_tp == nullptr)//第一次创建完成后就不为空了，因此也就可以不用进来获取锁了
         {
-            string name = "Thread-" + to_string(i + 1);
-            _threads.emplace_back(name, func);
+            LockGuard lock(&_sig_mutex);
+            if (_tp == nullptr)
+            {
+
+                LOG(INFO, "create threadpool\n");
+                _tp = new Thread_Pool();
+                _tp->init();
+                _tp->start();
+            }
         }
-    }
-    void start()
-    {
-        _isrunnning = true;
-        for (auto &t : _threads)
+        else
         {
-            t.start();
+            LOG(INFO, "get threadpool\n");
         }
+        return _tp;
     }
     void stop()
     {
@@ -199,6 +228,7 @@ public:
         _isrunnning = false;
         WakeUpAll();
         pthread_mutex_unlock(&_mutex);
+        LOG(INFO, "Thread Pool Stop Success!\n");
     }
     void join()
     {
@@ -224,3 +254,7 @@ public:
         pthread_mutex_unlock(&_mutex);
     }
 };
+template <class T>
+Thread_Pool<T> *Thread_Pool<T>::_tp = nullptr;
+template <class T>
+pthread_mutex_t Thread_Pool<T>::_sig_mutex = PTHREAD_MUTEX_INITIALIZER;

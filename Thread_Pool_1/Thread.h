@@ -4,6 +4,7 @@
 #include <string>
 #include <queue>
 #include <vector>
+#include"log.h"
 using func_t = std::function<void(const std::string& name)>;
 class Thread
 {
@@ -37,6 +38,10 @@ public:
             return false;
         }
         return true;
+    }
+    const std::string& Name()
+    {
+        return _name;
     }
     void stop()
     {

@@ -20,7 +20,7 @@
 //      printf("\n");
 //  }
 // V2
-void process(double total, double current)
+void processBar(double total, double current)
 {
     char bar[length];
     int cnt = 0;
@@ -30,7 +30,7 @@ void process(double total, double current)
     char s[4] = {'-', '/', '\\', '|'};
     while (cnt <= loop_cnt)
     {
-        printf("[%-100s][%c][%.1lf%][current:%.1lf total:%.1lf]\r", bar, s[cnt % 4], rate,current,total);
+        printf("[%-100s][%c][%.1lf%%][current:%.1lf total:%.1lf]\r", bar, s[cnt % 4], rate,current,total);
         bar[cnt++] = sign;
         fflush(stdout);
     }

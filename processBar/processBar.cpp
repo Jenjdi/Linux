@@ -5,7 +5,7 @@ void download(double total,double bandwidth)
     double current=0;
     while(current<=total)
     {
-        process(total,current);
+        processBar(total,current);
         current+=bandwidth;
         usleep(100000);
     }
@@ -14,7 +14,5 @@ void download(double total,double bandwidth)
 }
 int main()
 {
-    download(1024*1024*200,1024*1024);
-    download(1024*1024*50,1024*1024);
     download(1024*1024*60,1024*1024);
 }

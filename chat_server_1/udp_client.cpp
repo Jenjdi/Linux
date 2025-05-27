@@ -1,8 +1,12 @@
-#include <arpa/inet.h>
-#include <netinet/in.h>
+#include "log.h"
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#include "log.h"
+#include <netinet/in.h>
+#include <iostream>
+#include <string>
+#include <cstring>
+#include "InetAddr.h"
+#include "cond.h"
 int main(int argc,char* argv[])
 {
     if(argc!=3)
@@ -20,7 +24,6 @@ int main(int argc,char* argv[])
         exit(-1);
     }
     struct sockaddr_in remote;
-    memset(&remote,0,sizeof(remote));
     remote.sin_family = AF_INET;
     remote.sin_port = htons(serverport);
     remote.sin_addr.s_addr = inet_addr(serverip);

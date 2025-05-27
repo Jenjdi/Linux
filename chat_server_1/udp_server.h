@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <iostream>
+#include<functional>
 #include <string>
 #include <cstring>
 #include "InetAddr.h"
@@ -11,13 +12,14 @@
 #include "routine.h"
 uint16_t gport = 1234;
 int gsockfd = -1;
-
+using service_t=std::function<void(int, InetAddr&, const std::string&)>;
 class server : public nocopy
 {
 private:
     int _sockfd = gsockfd;
     uint16_t _port;
     struct sockaddr_in _local;
+    service_t _func;
     socklen_t len = sizeof(_local);
     void init()
     {
@@ -28,11 +30,11 @@ private:
             exit(SOCKERR);
         }
         LOG(DEBUG, "create sockfd success");
-
+        memset(&_local,0,sizeof(_local));
         _local.sin_family = AF_INET;
         _local.sin_addr.s_addr = INADDR_ANY;
         _local.sin_port = htons(_port);
-        int n = bind(_sockfd, (sockaddr *)&_local, len);
+        int n = bind(_sockfd, (struct sockaddr *)&_local, len);
         if (n < 0)
         {
             LOG(FATAL, "bind failed");
@@ -42,8 +44,9 @@ private:
     }
 
 public:
-    server(uint16_t port = gport)
-        : _port(port)
+    server(service_t func,uint16_t port = gport)
+        : _port(port),
+        _func(func)
     {
         memset(&_local, 0, len);
         init();
@@ -55,24 +58,21 @@ public:
 
     void start()
     {
-
-        char rbuf[128];
+        
+        char message[1024];
         while (1)
         {
             struct sockaddr_in peer;
             socklen_t plen=sizeof(peer);
-            int rnum = recvfrom(_sockfd, rbuf, sizeof(rbuf) - 1, 0, (sockaddr *)&peer, &plen);
+            int rnum = recvfrom(_sockfd, message, sizeof(message) - 1, 0, (struct sockaddr *)&peer, &plen);
             if (rnum < 0)
             {
                 LOG(ERROR, "receive failed");
             }
             InetAddr addr(peer);
-            rbuf[rnum] = 0;
-            std::cout << "[" << inet_ntoa(peer.sin_addr) << ":" << _port << "]# " << rbuf << std::endl;
-            char sbuff[256];
-            snprintf(sbuff, sizeof(sbuff) - 1, "[%s:%d]#", inet_ntoa(peer.sin_addr), _port);
-            routine r(addr);
-            r.forward(_sockfd, addr, sbuff);
+            message[rnum] = 0;
+            cout << "[" << addr.Ip() << ":" << addr.Port() << "]" << message << endl;
+            _func(_sockfd,addr,message);
         }
     }
 };

@@ -9,135 +9,100 @@
 #include <arpa/inet.h>
 #include "InetAddr.hpp"
 #include <sys/wait.h>
+#include "log.h"
+const int gbacklog = 8; // 连接队列的大小，一般不要太大
 using namespace std;
-const static uint16_t gport = 8888;
-const static int gsock = -1;
-const static int backlog = 8;
-
-class tcpserver
+enum
 {
-
-public:
-    tcpserver(uint16_t port = gport)
-        : _port(port), _listensockfd(gsock), _isrunning(false)
-    {
-    }
+    SOCKERR = 1,
+    BINDERR = 0,
+    LISERR = 2,
+    ACCERR = 3
+};
+class tcp_server
+{
+private:
+    uint16_t _port;
+    int _listensock;
+    bool _isrunning = false;
     void init()
     {
-        _listensockfd = socket(AF_INET, SOCK_STREAM, 0); // 创建socket
-        if (_listensockfd < 0)
+        _listensock = socket(AF_INET, SOCK_STREAM, 0);
+        if (_listensock < 0)
         {
-            cout << "sockfd init failed" << endl;
-            exit(1);
+            LOG(FATAL, "sock create failed");
+            exit(SOCKERR);
         }
-        cout << "sockfd successfully created" << endl;
         struct sockaddr_in local;
         memset(&local, 0, sizeof(local));
-        local.sin_family = AF_INET;
-        local.sin_port = htons(_port);
         local.sin_addr.s_addr = INADDR_ANY;
-        socklen_t len = sizeof(local);
-        int n = bind(_listensockfd, (struct sockaddr *)&local, len); // 绑定文件描述符和地址
+        local.sin_port = htons(_port);
+        local.sin_family = AF_INET;
+        int n = bind(_listensock, (struct sockaddr *)&local, sizeof(local));
         if (n < 0)
         {
-            cout << "Bind Failed" << endl;
-            exit(-1);
+            LOG(FATAL, "bind failed");
+            exit(BINDERR);
         }
-        cout << "Bind Success" << endl;
-        // tcp是面向连接的，因此需要做的能够获取连接，需要将套接字设置为listen状态
-        if (listen(_listensockfd, backlog) < 0)
+        // tcp是面向连接的，因此需要建立连接，将套接字设置为listen状态
+        if (listen(_listensock, gbacklog) < 0)
         {
-            cout << "Listen Failed" << endl;
-            exit(-1);
+            LOG(FATAL, "listen failed");
+            exit(LISERR);
         }
-        cout << "Listen Success" << endl;
     }
-    class threadData
-    {
-    private:
-        int _socketfd;
-        tcpserver *_self;
-        InetAddr _addr;
 
-    public:
-        threadData(int socketfd, tcpserver *self, const InetAddr& addr)
-            : _socketfd(socketfd), _self(self), _addr(addr) {}
-    };
+public:
+    tcp_server()
+    {
+        init();
+    }
+    ~tcp_server()
+    {
+    }
+
     void loop()
     {
         _isrunning = true;
-        while (true)
+        while (_isrunning)
         {
             struct sockaddr_in client;
             socklen_t len = sizeof(client);
-            int sockfd = accept(_listensockfd, (struct sockaddr *)&client, &len);
-            if (sockfd < 0)
+            int fd = accept(_listensock, (sockaddr *)&client, &len); // 这里的_listensock只进行获取新连接，不进行读写操作，真正进行网络服务的是获取到的fd
+            if (fd < 0)
             {
-                cout << "accept error" << endl;
+                LOG(FATAL, "accept failed");
                 continue;
             }
             InetAddr addr(client);
-            // service(sockfd,addr);
-            // 多进程版本：
-            //  pid_t id=fork();
-            //  if(id==0)
-            //  {
-            //      close(_listensockfd);
-            //      if(fork()>0)//创建一个孙子进程来执行下面的操作，然后自己退出，当孙子进程执行完成后，将会变成孤儿进程，操作系统将会自己回收
-            //      {
-            //          exit(0);
-            //      }
-            //      service(sockfd,addr);
-            //      exit(0);
-            //  }
-            //  close(sockfd);
-            //  int n=waitpid(id,nullptr,0);
-            //  if(n>0)
-            //  {
-            //      cout<<"child wait success"<<endl;
-            //  }
-            // 多线程版本：
-            pthread_t tid;
-            threadData *td = new threadData(sockfd, this, addr);
-            pthread_create(&tid, nullptr, execute, td);
+            LOG(DEBUG,"get new link client info:%s\n",addr.Ip().c_str());
+            service(fd,addr);
         }
-        _isrunning = false;
+        _isrunning=false;
     }
-    static void *execute(void *args)
+    void service(int sockfd,InetAddr addr)
     {
-        pthread_detach(pthread_self());
-        threadData *td = static_cast<threadData *>(args);
-        td->_self->service(td->_socketfd, td->_addr);
-        delete td;
-        return nullptr;
-    }
-    void service(int sockfd, InetAddr &addr)
-    {
-        while (true)
+        while(true)
         {
-            char inbuffer[1024];
-            ssize_t n = read(_listensockfd, inbuffer, sizeof(inbuffer) - 1);
-            if (n > 0)
+            char inbuffer[128];
+            ssize_t n=read(sockfd,inbuffer,sizeof(inbuffer)-1);
+            if(n>0)
             {
-                string echo_string = "[server echo]#";
-                echo_string += inbuffer;
-                write(_listensockfd, echo_string.c_str(), echo_string.size());
+                string echo_string="[server echo]#";
+                echo_string+=inbuffer;
+                write(sockfd,echo_string.c_str(),echo_string.size());
             }
-            else if (n == 0)
+            else if(n==0)
             {
-                cout << "client quit" << endl;
+                LOG(INFO,"client quit");
                 break;
             }
             else
             {
-                cout << "read error" << endl;
+                LOG(ERROR,"read error:%s\n",addr.Ip().c_str());
+                break;
             }
         }
-        close(_listensockfd);
+        close(sockfd);
     }
-
-private:
-    uint16_t _port;
-    int _listensockfd;
-    bool _isrunning;
 };

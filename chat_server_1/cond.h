@@ -2,5 +2,7 @@
 enum
 {
     SOCKERR=0,
-    BINDERR=1
+    BINDERR=1,
+    SENDERR=2,
+    RECERR=3
 };

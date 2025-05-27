@@ -5,7 +5,7 @@
 #include <queue>
 #include <vector>
 #include"log.h"
-using func_t=std::function<void()>;
+using func_t=std::function<void(const std::string&)>;
 class Thread
 {
 private:
@@ -22,7 +22,7 @@ private:
     void Execute()
     {
         _isrunning = true;
-        _func();
+        _func(_name);
         _isrunning = false;
     }
 

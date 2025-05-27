@@ -8,18 +8,25 @@
 #include<vector>
 #include"InetAddr.h"
 #include"Thread_Pool.h"
-using service_t = std::function<void(int, const std::string &message, InetAddr &who)>;
+
+using task_t=std::function<void()>;
 class routine
 {
     private:
     std::vector<InetAddr> _userlist;
+    pthread_mutex_t _mutex;
     public:
-    routine(const InetAddr& who)
+    routine()
     {
-        _userlist.push_back(who);
+        pthread_mutex_init(&_mutex,nullptr);
+    }
+    ~routine()
+    {
+        pthread_mutex_destroy(&_mutex);
     }
     void checkuer(InetAddr& who)
     {
+        LockGuard lockguard(&_mutex);
         for(auto e:_userlist)
         {
             if(e==who)
@@ -31,6 +38,7 @@ class routine
     }
     void offline(InetAddr& who)
     {
+        LockGuard lockguard(&_mutex);
         auto it=_userlist.begin();
         for(;it<_userlist.end();it++)
         {
@@ -43,10 +51,11 @@ class routine
     }
     void forwardhelper(int sockfd,const std::string& message)
     {
+        LockGuard lockguard(&_mutex);
         for(auto e:_userlist)
         {
             struct sockaddr_in addr=e.Addr();
-            int len = sizeof(addr);
+            socklen_t len = sizeof(addr);
             int n=sendto(sockfd,message.c_str(),message.size(),0,(sockaddr*)&addr,len);
         }
     }
@@ -58,7 +67,7 @@ class routine
             offline(who);
         }
         //forwardhelper(sockfd,message);
-        func_t t=std::bind(&routine::forwardhelper,this,sockfd,message);
-        Thread_Pool<func_t>::GetInstance()->push(t);
+        task_t t=std::bind(&routine::forwardhelper,this,sockfd,message);
+        Thread_Pool<task_t>::GetInstance()->push(t);
     }
 };

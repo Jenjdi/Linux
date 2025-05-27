@@ -115,7 +115,7 @@
 #include "LockGuard.hpp"
 #include <iostream>
 using namespace std;
-const int globalnum = 5;
+const int globalnum = 6;
 template <class T>
 class Thread_Pool
 {
@@ -192,7 +192,6 @@ private:
             t.start();
         }
     }
-
 public:
     Thread_Pool(int num = globalnum)
         : _thread_num(num),

@@ -1,4 +1,42 @@
-#pragma once
+// #include<arpa/inet.h>
+// #include<sys/socket.h>
+// #include<netinet/in.h>
+// #include<unistd.h>
+// #include<iostream>
+// #include<cstring>
+// #include<string>
+
+// int main(int argc,char* argv[])
+// {
+//     if(argc<3)
+//     {
+//         std::cout<<"use client ip port"<<std::endl;
+//     }
+//     std::string ip=argv[1];
+//     uint16_t port=std::stoi(argv[2]);
+//     int sockfd=socket(AF_INET,SOCK_STREAM,0);//通过这个文件描述符收发消息
+//     struct sockaddr_in remote;//远端的结构体
+//     memset(&remote,0,sizeof(remote));
+//     remote.sin_port=htons(port);
+//     inet_pton(AF_INET,ip.c_str(),&remote.sin_addr);
+//     int n=connect(sockfd,(struct sockaddr*)&remote,sizeof(remote));
+//     while(true)
+//     {
+//         std::string message;
+//         std::cout<<"Enter Message#";
+//         std::getline(std::cin,message);
+//         write(sockfd,message.c_str(),message.size());
+//         char buf[128];
+//         n=read(sockfd,buf,sizeof(buf)-1);
+//         if(n>0)
+//         {
+//             buf[n]=0;
+//             std::cout<<buf<<std::endl;
+//         }
+        
+//     }
+    
+// }
 #include<iostream>
 #include<cstring>
 #include<string>
@@ -7,8 +45,7 @@
 #include<sys/socket.h>
 #include<netinet/in.h>
 #include<arpa/inet.h>
-#include"InetAddr.hpp"
-
+using namespace std;
 int main(int argc,char* argv[])
 {
     if(argc!=3)
@@ -43,12 +80,12 @@ int main(int argc,char* argv[])
         string msg;
         cout<<"Enter Message#";
         getline(cin,msg);
-        write(sockfd,&msg,msg.size());
+        write(sockfd,msg.c_str(),msg.size());
         char echobuffer[1024];
         n=read(sockfd,echobuffer,sizeof(echobuffer));
         if(n>0)
         {
-            echobuffer[n]=0;
+            echobuffer[n]='\0';
             cout<<echobuffer<<endl;
         }
         else

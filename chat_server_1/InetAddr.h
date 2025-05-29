@@ -1,25 +1,29 @@
 #pragma once
-#include<netinet/in.h>
-#include<sys/socket.h>
-#include<sys/types.h>
-#include<arpa/inet.h>
-#include<string>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
+#include <string>
 class InetAddr
 {
-    void to_host(const struct sockaddr_in& addr)
+    void to_host(const struct sockaddr_in &addr)
     {
-        _port=ntohs(addr.sin_port);
-        _ip=inet_ntoa(addr.sin_addr);
+        // _port=ntohs(addr.sin_port);
+        // _ip=inet_ntoa(addr.sin_addr);
+        char ip_buf[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &addr.sin_addr, ip_buf, INET_ADDRSTRLEN);
+        _ip = ip_buf;
     }
-    public:
-    InetAddr(const struct sockaddr_in& addr)
-    :_addr(addr)
+
+public:
+    InetAddr(const struct sockaddr_in &addr)
+        : _addr(addr)
     {
         to_host(addr);
     }
-    bool operator == (InetAddr& addr)
+    bool operator==(InetAddr &addr)
     {
-        return this->_ip==addr._ip&&this->_port==addr._port;
+        return this->_ip == addr._ip && this->_port == addr._port;
     }
     sockaddr_in Addr()
     {
@@ -33,8 +37,8 @@ class InetAddr
     {
         return _port;
     }
-    
-    private:
+
+private:
     std::string _ip;
     uint16_t _port;
     struct sockaddr_in _addr;

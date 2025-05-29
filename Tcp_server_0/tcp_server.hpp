@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include "log.h"
 const int gbacklog = 8; // 连接队列的大小，一般不要太大
+const int gport=1234;
 using namespace std;
 enum
 {
@@ -33,6 +34,7 @@ private:
             LOG(FATAL, "sock create failed");
             exit(SOCKERR);
         }
+        LOG(DEBUG,"sock create success");
         struct sockaddr_in local;
         memset(&local, 0, sizeof(local));
         local.sin_addr.s_addr = INADDR_ANY;
@@ -53,9 +55,11 @@ private:
     }
 
 public:
-    tcp_server()
+    tcp_server(uint16_t port=gport)
+    :_port(port)
     {
         init();
+        LOG(DEBUG,"init success");
     }
     ~tcp_server()
     {
@@ -88,6 +92,7 @@ public:
             ssize_t n=read(sockfd,inbuffer,sizeof(inbuffer)-1);
             if(n>0)
             {
+                inbuffer[n]='\0';
                 string echo_string="[server echo]#";
                 echo_string+=inbuffer;
                 write(sockfd,echo_string.c_str(),echo_string.size());

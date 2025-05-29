@@ -13,8 +13,8 @@ class InetAddr
     {
         
         _port=ntohs(addr.sin_port);
-        char ip_buf(32);
-        inet_ntop(AF_INET,&addr.sin_addr,&ip_buf,sizeof(addr));
+        char ip_buf[32];
+        inet_ntop(AF_INET,&addr.sin_addr,ip_buf,sizeof(addr));
         _ip=ip_buf;
     }
     public:

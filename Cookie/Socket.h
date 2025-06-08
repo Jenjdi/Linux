@@ -132,5 +132,7 @@ class TcpSocket:public Socket
     virtual void Close()
     {
         ::close(_sockfd);
+        int opt=1;
+        setsockopt(_sockfd,SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt));//解决关闭服务端后进入time_wait状态时bind失败
     }
 };

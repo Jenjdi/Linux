@@ -112,7 +112,7 @@ int getCommand(char usercommand[], size_t n) // 获取命令
         return -1;
     }
     usercommand[strlen(usercommand) - 1] = ZERO;
-    // strlen取到的是最后一个元素\n，但是并不希望去到\n，\n的下标为strlen-1，将其设置为\0表示为字符串结尾
+    // strlen取到的是最后一个元素\n，但是并不希望取到\n，\n的下标为strlen-1，将其设置为\0表示为字符串结尾
     // 由于至少按过一次回车，因此至少有一个\n，因此即使不输入，也不会越界
     return strlen(usercommand);
 }

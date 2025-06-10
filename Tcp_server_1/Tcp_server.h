@@ -30,7 +30,7 @@ private:
         local.sin_addr.s_addr = INADDR_ANY;
         local.sin_port = htons(_port);
         int n = bind(_sockfd, (struct sockaddr *)&local, sizeof(local));
-        listen(_sockfd, 8);
+        listen(_sockfd,1);//第二个参数是backlog的大小，代表最多能有多少个全连接队列，如果设置过小，会导致服务器空闲较高，无法给用户提供良好的服务，设置过大，会导致新连接的用户等待时间过长
     }
     void service(int fd)
     {

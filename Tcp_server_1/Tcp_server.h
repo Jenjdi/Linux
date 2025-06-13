@@ -13,7 +13,7 @@
 #include<pthread.h>
 #include "log.h"
 #include"Thread_Pool.h"
-const uint16_t gport = 1234;
+const uint16_t gport = 25565;
 using task_t=std::function<void()>;
 class server
 {

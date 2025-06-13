@@ -51,15 +51,13 @@ int GetCommand(char command[],int n)
     return strlen(command);
     
 }
-const char* SepCommand(char* command,int n)
-{
-    char* com=strtok(command,Sep);
-    char* parameter=strtok(command,Sep);
-    return com;
-}
-void ExecuteCommand(const char* command,int n)
+void SepCommand(char command[],int n)
 {
 
+}
+void ExecuteCommand(char* command,int n)
+{
+    SepCommand(command,sizeof(command));
 }
 int main()
 {
@@ -72,6 +70,4 @@ int main()
     }
     //ExecuteCommand(command,sizeof(command));
     printf("%s\n",command);
-    const char* com=SepCommand(command,sizeof(command));
-    printf("%s\n",com);
 }

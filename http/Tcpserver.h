@@ -23,7 +23,7 @@ private:
         pthread_detach(pthread_self());
         ThreadData *td = static_cast<ThreadData *>(arg);
         std::string message;
-        ssize_t n = td->_sockfd->Recv(&message);
+        ssize_t n = td->_sockfd->Recv(&message);//由于TCP是面向字节流的，因此可能读取到不完整的请求
         if (n > 0)
         {
             std::string resp;

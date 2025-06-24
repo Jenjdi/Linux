@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <fstream>
 #include<functional>
+#include"log.h"
 const std::string base_sep = "\r\n";
 const std::string line_sep = ": ";
 const std::string space = " ";
@@ -289,7 +290,7 @@ private:
         in.seekg(0, in.beg);   // 将指针放回到文件开头
         std::string content;
         content.resize(size);
-        in.read((char *)content.c_str(), size);
+        in.read((char*)content.c_str(), size);
         in.close();
         return content;
     }

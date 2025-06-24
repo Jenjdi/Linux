@@ -41,7 +41,7 @@ public:
     {
         for (int i = 0; i < n; i++)
         {
-            if (evnets[i].events && EPOLLIN)
+            if (evnets[i].events & EPOLLIN)
             {
                 if (evnets[i].data.fd == _listensock->sockfd())
                 {

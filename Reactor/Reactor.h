@@ -125,7 +125,6 @@ public:
     }
     void Dispatch()
     {
-        
         _isrunning = true;
         while (true)
         {

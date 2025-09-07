@@ -1,76 +1,66 @@
-#include<pthread.h>
-#include<iostream>
 #include<vector>
+#include<pthread.h>
 #include<semaphore.h>
+#include<string>
+#include<unistd.h>
+const int DefaultCapacity=10;
 using namespace std;
 template<class T>
-class ringqueue
+class RingQueue
 {
     private:
-    int _maxcap;
-    vector<T> _ringqueue;
-    int _cstep;
-    int _pstep;
-    sem_t _data_sem;
-    sem_t _space_sem;
-    pthread_mutex_t _cmutex;
-    pthread_mutex_t _pmutex;
+    int max_capacity;
+    int consumer_step;
+    int producer_step;
+    sem_t data_sem;
+    sem_t space_sem;
+    pthread_mutex_t consumer_mutex;
+    pthread_mutex_t producer_mutex;
+    vector<T> Queue;
     public:
-    ringqueue(int maxcap)
-    :_maxcap(maxcap),
-    _ringqueue(_maxcap),
-    _cstep(0),
-    _pstep(0)
+    RingQueue(int MaxCapacity=DefaultCapacity)
+    :max_capacity(MaxCapacity),Queue(MaxCapacity)
     {
-        sem_init(&_data_sem,0,0);
-        sem_init(&_space_sem,0,_maxcap);//线程间共享
-        pthread_mutex_init(&_cmutex);
-        pthread_mutex_init(&_pmutex);
+        pthread_mutex_init(&consumer_mutex,nullptr);
+        pthread_mutex_init(&producer_mutex,nullptr);
+        sem_init(&data_sem,0,0);
+        sem_init(&space_sem,0,max_capacity);
+        consumer_step=0;
+        producer_step=0;
     }
-    ~ringqueue()
+    ~RingQueue()
     {
-        sem_destroy(&_data_sem);
-        sem_destroy(&_space_sem);
-        pthread_mutexattr_destroy(&_pmutex);
-        pthread_mutexattr_destroy(&_cmutex);
+        pthread_mutex_destroy(&consumer_mutex);
+        pthread_mutex_destroy(&producer_mutex);
+        sem_destroy(&data_sem);
+        sem_destroy(&space_sem);
     }
-    bool P(sem_t* sem)
+    void P(sem_t& sem)
     {
-        int n=sem_wait(sem);
-        if(n==0)
-        {
-            return true;
-        }
-        return false;
+        sem_wait(&sem);
     }
-    bool V(sem_t* sem)
+    void V(sem_t& sem)
     {
-        sem_post(sem);
-        if(n==0)
-        {
-            return true;
-        }
-        return false;
+        sem_post(&sem);
     }
-    
-    void push(const T& in)
+    void push(const T& val)
     {
-        P(&_space_sem);
-        pthread_mutex_lock(&_pmutex);
-        _ringqueue[_pstep]=in;
-        _pstep++;
-        _pstep%=_maxcap;
-        pthread_mutex_unlock(&_pmutex);
-        V(&_data_sem);
+        pthread_mutex_lock(&producer_mutex);
+        P(space_sem);
+        Queue[producer_step]=val;
+        producer_step++;
+        producer_step%=max_capacity;
+        V(data_sem);
+        pthread_mutex_unlock(&producer_mutex);
     }
-    void pop(const T& out)
+    void pop(T* val)
     {
-        P(&_data_sem);
-        pthread_mutex_lock(&_cmutex);
-        out=_ringqueue[_cstep];
-        _cstep++;
-        _cstep%=_maxcap;
-        pthread_mutex_unlock(&_cmutex);
-        V(&_space_sem);
+        pthread_mutex_lock(&consumer_mutex);
+        P(data_sem);
+        *val=Queue[consumer_step];
+        consumer_step++;
+        consumer_step%=max_capacity;
+        V(space_sem);
+        pthread_mutex_unlock(&consumer_mutex);
     }
 };

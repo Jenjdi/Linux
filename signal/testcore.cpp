@@ -76,7 +76,7 @@
 //     //while (!gflag);
 //     while(1);
 //     cout<<"process quit normal"<<endl;
-    
+
 // }
 // #include<signal.h>
 // #include<unistd.h>
@@ -96,22 +96,58 @@
 //     sigaction(SIGINT,&action,&oaction);
 //     while (1);
 // }
-#include<signal.h>
-#include<unistd.h>
-#include<iostream>
+// #include<signal.h>
+// #include<unistd.h>
+// #include<iostream>
+// using namespace std;
+// int main()
+// {
+//     sigset_t blockset,oldset;
+//     sigemptyset(&blockset);
+//     sigemptyset(&oldset);
+//     sigaddset(&blockset,2);
+//     sigaddset(&blockset,40);
+//     sigprocmask(SIG_BLOCK,&blockset,&oldset);
+//     while(1)
+//     {
+//         cout<<kill(getpid(),2)<<endl;
+//         cout<<kill(getpid(),40)<<endl;
+//         sleep(1);
+//     }
+// }
+#include <signal.h>
+#include <unistd.h>
+#include <iostream>
 using namespace std;
+void print_pending(sigset_t &pending)
+{
+    cout << "current pending[" << getpid() << "]:";
+    for (int i = 31; i >= 1; i--)
+    {
+        if (sigismember(&pending, i))
+        {
+            cout << 1;
+        }
+        else
+        {
+            cout << 0;
+        }
+    }
+    cout << endl;
+}
+
 int main()
 {
-    sigset_t blockset,oldset;
-    sigemptyset(&blockset);
-    sigemptyset(&oldset);
-    sigaddset(&blockset,2);
-    sigaddset(&blockset,40);
-    sigprocmask(SIG_BLOCK,&blockset,&oldset);
-    while(1)
+    sigset_t block_sig, old_sig;
+    sigemptyset(&block_sig);
+    sigemptyset(&old_sig);
+    sigaddset(&block_sig, SIGINT);
+    sigprocmask(SIG_BLOCK, &block_sig, &old_sig);
+    while (true)
     {
-        cout<<kill(getpid(),2)<<endl;
-        cout<<kill(getpid(),40)<<endl;
+        sigset_t pending;
+        sigpending(&pending);
+        print_pending(pending);
         sleep(1);
     }
 }

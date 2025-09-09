@@ -110,16 +110,111 @@ using namespace std;
 //         end--; // 双指针移动
 //     }
 // }
-
-void heap_sort(vector<int>& arr)
-{
+// void AdjustUp(vector<int>& arr)
+// {
+//     int child=arr.size()-1;
+//     int parent=(child-1)/2;
+//     while (parent>0)
+//     {
+//         if(arr[child]>arr[parent])
+//         {
+//             swap(arr[child],arr[parent]);
+//             child=parent;
+//             parent=(parent-1)/2;
+//         }
+//         else
+//         {
+//             break;
+//         }
+//     }
     
+// }
+
+// void heap_sort(vector<int>& arr)
+// {
+    
+// }
+int GetMid(vector<int>& arr,int begin,int end)
+{
+    int mid=(begin+end)/2;
+    if(arr[begin]<arr[end])
+    {
+        if(arr[mid]>arr[begin])
+            return mid;
+        else if(arr[mid]<arr[begin])
+            return begin;
+        else
+            return end;
+    }
+    else//end >= begin
+    {
+        if(arr[mid]<arr[begin])
+            return begin;
+        else if(arr[mid]>arr[begin])
+            return mid;
+        else return end;
+    }
 }
 
+void quick_sort(vector<int>& arr,int begin,int end)
+{
+    if(begin>=end)
+    {
+        return;
+    }
+    // int left=begin,right=end;
+    // int keyi=begin;
+    // while(left<right)
+    // {
+    //     while (left<right&&arr[left]<=arr[keyi])
+    //     {
+    //         left++;
+    //     }
+    //     while(left<right&&arr[right]>=arr[keyi])
+    //     {
+    //         right--;
+    //     }
+    //     swap(arr[left],arr[right]);
+    // }
+    // swap(arr[keyi],arr[left]);
+    // keyi=left;
+    // quick_sort(arr,begin,keyi-1);
+    // quick_sort(arr,keyi+1,end);
+    int midi=GetMid(arr,begin,end);
+    swap(arr[begin],arr[midi]);
+    int left = begin, right = end;
+	int keyi = begin;
+
+	while (left < right)
+	{
+        //一定要是先找小再找大，为了让相遇位置一定是小于基准值的
+		// 右边找小
+		while (left < right && arr[right] >= arr[keyi])
+		{
+			--right;
+		}
+
+		// 左边找大
+		while (left < right && arr[left] <= arr[keyi])
+		{
+			++left;
+		}
+
+		swap(arr[left], arr[right]);
+	}
+
+	swap(arr[left], arr[keyi]);
+	keyi = left;
+
+	// [begin, keyi-1] keyi [keyi+1, end]
+	quick_sort(arr, begin, keyi - 1);
+	quick_sort(arr, keyi+1, end);
+}
+#include<stdio.h>
 int main()
 {
     vector<int> arr = {2, 8, 1, 8, 1, 8, 5, 6, 3, 4, 54, 854, 564, 561};
-    //select_sort(arr);
+    quick_sort(arr,0,arr.size()-1);
     for (auto &e : arr)
     {
         cout << e << " ";

@@ -3,19 +3,43 @@
 #include <algorithm>
 using namespace std;
 // 选择排序
+// void selectsort(vector<int>& arr)
+// {
+//     for (int i = 0; i < arr.size()-1; i++) {
+//         int minnum = i;
+//         for (int j = i + 1; j < arr.size(); j++) {
+//             if (arr[j] < arr[minnum]){
+//                 minnum = j;
+//             }
+//         }
+//         if (minnum != i)
+//         {
+//             swap(arr[minnum], arr[i]);
+//         }
+//     }
+// }
 void selectsort(vector<int>& arr)
 {
-    for (int i = 0; i < arr.size()-1; i++) {
-        int minnum = i;
-        for (int j = i + 1; j < arr.size(); j++) {
-            if (arr[j] < arr[minnum]){
-                minnum = j;
-            }
-        }
-        if (minnum != i)
+    int left=0,right=arr.size()-1;
+    
+    while(left<right)
+    {
+        int min=left,max=left;
+        for(int i=left+1;i<right;i++)
         {
-            swap(arr[minnum], arr[i]);
+            if(arr[i]<arr[min])
+                min=i;
+            if(arr[i]>arr[max])
+                max=i;
         }
+        swap(arr[min],arr[left]);
+        if(max==left)
+        {
+            max=min;
+        }
+        swap(arr[max],arr[right]);
+        left++;
+        right--;
     }
 }
 int main()

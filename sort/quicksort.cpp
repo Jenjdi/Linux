@@ -2,7 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <stdlib.h>
-#include<stack>
+#include <stack>
 using namespace std;
 // 霍尔法
 //  void quicksort(vector<int>&arr, int low, int high) {
@@ -11,16 +11,15 @@ using namespace std;
 //      if(i >= j) {
 //          return;
 //      }
-
 //     int temp = arr[low];
 //     while(i != j) {
 //         while(arr[j] >= temp && i < j) {
 //             j--;
 //         }
-// 	while(arr[i] <= temp && i < j) {
+// 	        while(arr[i] <= temp && i < j) {
 //             i++;
 //         }
-// 	if(i < j) {
+// 	        if(i < j) {
 //             swap(arr[i], arr[j]);
 //         }
 //     }
@@ -80,41 +79,41 @@ int partition(vector<int> &arr, int begin, int end)
     swap(arr[prev], arr[keyi]);
     keyi = prev;
     return keyi;
-    //quicksort(arr, begin, keyi - 1);
-    //quicksort(arr, keyi + 1, end);
+    // quicksort(arr, begin, keyi - 1);
+    // quicksort(arr, keyi + 1, end);
 }
-//递归形式
-void quicksort(vector<int>& arr,int begin,int end)
+// 递归形式
+void quicksort(vector<int> &arr, int begin, int end)
 {
     if (begin >= end)
         return;
-    int keyi=partition(arr,begin,end);
-    quicksort(arr,begin,keyi-1);
-    quicksort(arr,keyi+1,end);
+    int keyi = partition(arr, begin, end);
+    quicksort(arr, begin, keyi - 1);
+    quicksort(arr, keyi + 1, end);
 }
-//非递归形式
-void quicksort_NonRecursive(vector<int>& arr,int begin,int end)
+// 非递归形式
+void quicksort_NonRecursive(vector<int> &arr, int begin, int end)
 {
     stack<int> st;
     st.push(end);
     st.push(begin);
-    while(!st.empty())
+    while (!st.empty())
     {
-        int left=st.top();
+        int left = st.top();
         st.pop();
-        int right=st.top();
+        int right = st.top();
         st.pop();
-        int keyi=partition(arr,left,right);
+        int keyi = partition(arr, left, right);
         //[left,keyi-1],keyi,[keyi+1,right]
-        if(left<keyi-1)
+        if (left < keyi - 1)
         {
-            st.push(keyi-1);
+            st.push(keyi - 1);
             st.push(left);
         }
-        if(right>keyi+1)
+        if (right > keyi + 1)
         {
             st.push(right);
-            st.push(keyi+1);
+            st.push(keyi + 1);
         }
     }
 }

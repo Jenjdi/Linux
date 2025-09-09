@@ -130,10 +130,6 @@ using namespace std;
     
 // }
 
-// void heap_sort(vector<int>& arr)
-// {
-    
-// }
 int GetMid(vector<int>& arr,int begin,int end)
 {
     int mid=(begin+end)/2;

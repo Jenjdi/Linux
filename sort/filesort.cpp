@@ -3,6 +3,7 @@
 #include <string>
 #include <cstdio>
 #include<cstring>
+#include<stack>
 #include "quicksort.h"
 using namespace std;
 void make_random_num_file(const string &path, int make_nums)
@@ -101,5 +102,12 @@ void filesort(const string &path, int read_once_num)
 int main()
 {
     //make_random_num_file("./sort_file/file.txt",10000);
-    filesort("./sort_file/file.txt", 1000);
+    //filesort("./sort_file/file.txt", 1000);
+    string a;
+    cin>>a;
+    cout<<a.size();
+    stack<char> st;
+    st.push(a[1]);
+    cout<<st.top();
+    st.pop();
 }

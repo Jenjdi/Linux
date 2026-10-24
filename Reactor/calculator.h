@@ -1,5 +1,5 @@
 #pragma once
-#include"packageparse.h"
+#include"protocol.h" // 修复：去除与报文解析器的循环包含。
 class Calculator
 {
     public:
@@ -19,7 +19,7 @@ class Calculator
             {
                 resp->_code=1;
                 resp->_desc="divide zero";
-                
+
             }
             else
                 resp->_result=req->X()/req->Y();

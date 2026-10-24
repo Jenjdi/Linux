@@ -7,13 +7,14 @@
 #include"log.h"
 static int _connectnum;
 
-using func_t = std::function<void(int,int)>;
+// 修复：线程池回调接收线程名，保持声明和调用一致。
+using ThreadFunction = std::function<void(const std::string&)>;
 class Thread
 {
 private:
     pthread_t _tid;
     std::string _name;
-    func_t _func;
+    ThreadFunction _func;
     bool _isrunning;
     static void *ThreadRoutine(void *arg)
     {
@@ -25,12 +26,12 @@ private:
     {
         int timeout=-1;
         _isrunning = true;
-        _func(timeout);
+        _func(_name);
         _isrunning = false;
     }
 
 public:
-    Thread(const std::string &name, func_t func)
+    Thread(const std::string &name, ThreadFunction func)
         : _name(name),
           _func(func) {}
     bool start()
@@ -53,7 +54,7 @@ public:
     }
     void join()
     {
-        if (!_isrunning)
-            pthread_join(_tid, nullptr);
+        // join 等待线程结束，不能以运行状态跳过等待。
+        pthread_join(_tid, nullptr);
     }
 };

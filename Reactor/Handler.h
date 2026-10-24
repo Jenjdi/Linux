@@ -1,5 +1,6 @@
 #pragma once
 #include "Connection.h"
+#include "Reactor.h" // 访问成员需要完整类型。
 #include <errno.h>
 const static int buffersize = 512;
 class Handler

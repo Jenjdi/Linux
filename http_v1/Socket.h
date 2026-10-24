@@ -61,6 +61,9 @@ class TcpSocket:public Socket
         local.sin_addr.s_addr=INADDR_ANY;
         local.sin_family=AF_INET,
         local.sin_port=htons(port);
+        // 允许服务停止后立即重新绑定端口。
+        int reuseAddress = 1;
+        setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &reuseAddress, sizeof(reuseAddress));
         int n=bind(_sockfd,(struct sockaddr*)&local,sizeof(local));
         if(n<0)
         {
@@ -88,7 +91,8 @@ class TcpSocket:public Socket
             LOG(FATAL,"recv failed");
             exit(1);
         }
-        *out+=buf;
+        // 修复：recv 不会自动补字符串结束符，按实际长度追加。
+        if (n > 0) out->append(buf, static_cast<size_t>(n));
         LOG(DEBUG,"receive success");
         return n;
     }
@@ -114,7 +118,7 @@ class TcpSocket:public Socket
         struct sockaddr_in server;
         memset(&server,0,sizeof(server));
         server.sin_family=AF_INET;
-        server.sin_port=peerport;
+        server.sin_port=htons(peerport); // 端口使用网络字节序。
         inet_pton(AF_INET, peerip.c_str(), &server.sin_addr);
         ssize_t n =connect(_sockfd,(struct sockaddr*)&server,sizeof(server));
         if(n<0)

@@ -1,3 +1,5 @@
+#pragma once
+#include <strings.h>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -66,14 +68,14 @@ public:
         {
             _path += homepage;
         }
-        auto pos = _request_line.rfind(suffixsep);
-        if (pos == _request_line.npos)
+        auto pos = _url.rfind(suffixsep);
+        if (pos == _url.npos)
         {
             _suffix = ".default";
         }
         else
         {
-            _suffix = _request_line.substr(pos);
+            _suffix = _url.substr(pos);
         }
     }
     std::string GetRequestBody()
@@ -105,13 +107,15 @@ public:
         do
         {
             header = GetLine(reqstr);
-            if (header.empty())
+            // 空行标志报头结束，后面的字节全部属于正文。
+            if (header.empty() || header == base_sep)
                 break;
             if (header != base_sep)
             {
                 _request_header.push_back(header);
             }
         } while (true);
+        ParseHeader();
         if (!reqstr.empty())
         {
             _body_text = reqstr;
@@ -190,6 +194,9 @@ public:
     }
     std::string Serialize()
     {
+        // 修复：重复序列化不重复添加报头，并提供精确正文长度。
+        _resp_head.clear();
+        addHeader("Content-Length", std::to_string(_resp_body_text.size()));
         // 状态行
         _status_line = version + space + _status_code + space + _desc + base_sep;
         // 报头
@@ -230,23 +237,22 @@ public:
         std::cout << "---------------------------------" << std::endl;
         HttpRequest req;
         req.Deserialize(in);
-        _path = req.Path();
+        // 每个请求独立保存路径，避免多个处理线程相互覆盖。
+        const std::string requestPath = req.Path();
         req.GetRequestBody();
-        std::string content = GetFileContent(_path);
+        std::string content = GetFileContent(requestPath);
         HttpResponse resp;
         req.Print();
-        if (_path == "wwwroot/redir")
+        if (requestPath == "wwwroot/redir")
         {
             std::string redir = "https://www.qq.com";
             resp.addCode(301, _code_to_desc[301]);
             resp.addHeader("Location", redir);
         }
-        else if(!req.GetRequestBody().empty())
+        else if (_service.count(requestPath))
         {
-            if(_service.count(req.Path()))
-            {
-                resp=_service[req.Path()](req);
-            }
+            // 注册路由与正文是否为空无关，普通 GET 也可以命中处理函数。
+            resp = _service.at(requestPath)(req);
         }
         else
         {
@@ -290,7 +296,7 @@ private:
         in.seekg(0, in.beg);   // 将指针放回到文件开头
         std::string content;
         content.resize(size);
-        in.read((char*)content.c_str(), size);
+        if (size > 0) in.read(content.data(), size);
         in.close();
         return content;
     }

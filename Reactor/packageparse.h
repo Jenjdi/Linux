@@ -1,7 +1,9 @@
 #pragma once
 #include"protocol.h"
-#include"calculator.h"
+
 #include"Connection.h"
+#include"Reactor.h"
+#include"calculator.h" // 修复：先提供 Reactor 和 Calculator 的完整类型。
 using process_t=std::function<std::shared_ptr<Response>(std::shared_ptr<Request>)>;
 class PackageParse
 {
@@ -12,7 +14,7 @@ class PackageParse
     {
         while(true)
         {
-            
+
             std::string package=Decode(conn->Inbuff());//报文解析，提取报头和有效字段
             LOG(DEBUG,"decode success");
             if(package.empty())
@@ -31,7 +33,7 @@ class PackageParse
             //发回
             conn->AppendOutBuff(respmessage);
         }
-        
+
         //走到这里说明至少处理了一个请求，至少会有一个应答
         //if(!conn->OutBuff().empty()) conn->_send(conn);//直接发送数据
         if(!conn->OutBuff().empty())

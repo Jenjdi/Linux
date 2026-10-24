@@ -20,9 +20,9 @@ private:
     handler_t _send;
     handler_t _except;
     handler_t _accept;
-    Thread_Pool<func_t>* _tp;
-    
-    
+    // 连接表由同一事件循环管理，避免多个工作线程同时修改容器。
+
+
     struct epoll_event _revs[gnum];
     bool _isrunning;
     bool IsConnectionExist(int sockfd)
@@ -35,7 +35,7 @@ public:
         : _isrunning(false)
     {
         _epoll = std::make_unique<Epoll>();
-        _tp=_tp->GetInstance();
+
     }
     ~Reactor()
     {
@@ -91,11 +91,10 @@ public:
         _connectnum--;
         LOG(DEBUG,"sockfd quit ");
     }
-    void LoopOnce(int timeout,int eventfd)
+    void LoopOnce(int timeout)
     {
         // LOG(DEBUG,"wait strat");
-        uint64_t flag;
-        ::read(eventfd,&flag,sizeof(flag));
+        // 修复：直接等待 epoll，原实现使用了未创建的 eventfd。
         int n = _epoll->Wait(_revs, gnum, timeout);
         LOG(DEBUG, "wait success,retval=%d", n);
         for (int i = 0; i < n; i++)
@@ -128,14 +127,8 @@ public:
         _isrunning = true;
         while (true)
         {
-            int _eventfd[_connectnum]={-1};
-            for(int i=0;i<_connectnum;i++)
-            {
-                uint64_t flag;
-                ::write(_eventfd[i],&flag,sizeof(flag));
-                _tp->push(std::bind(Reactor::LoopOnce,this,std::placeholders::_1,_eventfd[i]));
-            }
-            
+            LoopOnce(-1); // 阻塞等待真实事件，避免空转及未初始化的描述符。
+
         }
         _isrunning = false;
     }

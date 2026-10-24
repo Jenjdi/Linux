@@ -67,7 +67,7 @@
 //         }
 //         void init()
 //         {
-//             func_t func = bind(&Thread_Pool::Handler, this, placeholders::_1);
+//             ThreadFunction func = bind(&Thread_Pool::Handler, this, placeholders::_1);
 //             for (int i = 0; i < _threadnum; i++)
 //             {
 //                 string name = "Thread-" + to_string(i + 1);
@@ -174,7 +174,7 @@ private:
     }
     void init()
     {
-        func_t func = bind(&Thread_Pool::Handler, this, placeholders::_1);
+        ThreadFunction func = bind(&Thread_Pool::Handler, this, placeholders::_1);
         for (int i = 0; i < _thread_num; i++)
         {
             string name = "Thread-" + to_string(i + 1);

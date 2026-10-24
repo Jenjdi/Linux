@@ -38,7 +38,8 @@ class clientconnection
     _max_retries(defaultretries)
     {
     }
-    status status()
+    // 规范命名：避免访问器与枚举类型同名。
+    status connectionStatus()
     {
         return _status;
     }
@@ -131,7 +132,7 @@ public:
     {
         while(true)
         {
-            switch (_connect.status())
+            switch (_connect.connectionStatus())
             {
             case status::NEW:
                 _connect.connect();

@@ -39,7 +39,7 @@ private:
         char buff[128];
         snprintf(buff, sizeof(buff), "%d-%02d-%02d %02d:%02d:%02d",
                  cur_time->tm_year + 1900,
-                 cur_time->tm_mon,
+                 cur_time->tm_mon + 1, // 修复：月份从 0 开始，需要加一。
                  cur_time->tm_mday,
                  cur_time->tm_hour,
                  cur_time->tm_min,
@@ -153,5 +153,5 @@ Log lg;
 #define EnableFile()     \
     do                   \
     {                    \
-        lg.Enable(FILE); \
+        lg.Enable(FILEPUT); /* 修复：FILE 是标准库类型，文件输出模式为 FILEPUT。 */ \
     } while (0)

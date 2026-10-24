@@ -1,9 +1,10 @@
+#include <iostream> // 修复独立包含时缺少标准输出流声明。
 #pragma once
 #include<functional>
 using task_t=std::function<void()>;
 void mission()
 {
-    cout<<"this is a task"<<endl;
+    std::cout<<"this is a task"<<std::endl;
 }
 class task
 {
@@ -17,12 +18,12 @@ class task
     {
         return _x+_y;
     }
-    string debug()
+    std::string debug()
     {
-        string msg=to_string(_x)+"+"+to_string(_y)+"=";
+        std::string msg=std::to_string(_x)+"+"+std::to_string(_y)+"=";
         return msg;
     }
     private:
-    int _x;
-    int _y;
+    int _x = 0;
+    int _y = 0;
 };

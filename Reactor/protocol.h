@@ -1,3 +1,6 @@
+#pragma once // 防止协议头被多个依赖重复包含。
+// 显式声明输出流依赖，支持头文件独立包含。
+#include <iostream>
 
 #include<jsoncpp/json/json.h>
 const std::string sep="\r\n";
@@ -89,7 +92,7 @@ class Response
         *out=s;
     }
     void Print()
-    { 
+    {
         std::cout<<"result:"<<_result<<" "<<"code:"<<_code<<" "<<"desc:"<<_desc<<std::endl;
     }
     void Deserialize(const std::string& in)
@@ -99,7 +102,7 @@ class Response
         read.parse(in,root);
         _result=root["_result"].asInt();
         _code=root["_code"].asInt();
-        _desc=root["_desc"].asString();    
+        _desc=root["_desc"].asString();
     }
     int _result;
     int _code;
